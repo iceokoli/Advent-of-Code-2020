@@ -58,7 +58,7 @@ func formatData(data []string) map[string][]string {
 }
 
 func findBag(color string, data map[string][]string) []string {
-	// find surface level gold bags
+	// find bag recursive
 	var baseColors []string
 	for k, v := range data {
 		for _, i := range v {
@@ -83,7 +83,7 @@ func findBag(color string, data map[string][]string) []string {
 }
 
 func findNoBag(color string, data map[string][]string) float64 {
-
+	// count no bag recursive
 	var noBag float64
 	if len(data[color]) == 0 {
 		return 0
