@@ -126,9 +126,9 @@ func (c challenge) partB(order []int, pos int) (int, map[int]int) {
 		return 1, check
 	}
 
-	// if _, ok := check[pos]; ok {
-	// 	return check[pos]
-	// }
+	if _, ok := check[pos]; ok {
+		return check[pos], check
+	}
 
 	for i := pos + 1; i < len(order); i++ {
 		if order[i]-order[pos] <= 3 {
@@ -146,9 +146,10 @@ func main() {
 	raw := day10.readInput()
 	ansA, o := day10.partA(raw)
 	fmt.Println("Part A ", ansA)
+	//fmt.Println(o)
 	ansB, _ := day10.partB(o, 0)
 	fmt.Println(ansB)
-	// fmt.Println(o)
+
 	// fmt.Println(c)
 
 }

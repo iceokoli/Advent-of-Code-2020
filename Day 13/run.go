@@ -29,8 +29,10 @@ func getData(env string) (int, []int) {
 	start, _ := strconv.Atoi(staging[0])
 	var buses []int
 	for _, bus := range strings.Split(staging[1], ",") {
-		temp, _ := strconv.Atoi(bus)
-		buses = append(buses, temp)
+		if bus != "x" {
+			temp, _ := strconv.Atoi(bus)
+			buses = append(buses, temp)
+		}
 	}
 
 	return start, buses
@@ -38,9 +40,9 @@ func getData(env string) (int, []int) {
 
 func main() {
 
-	env := "test"
+	env := "prod"
 	start, buses := getData(env)
-	fmt.Println(start)
-	fmt.Println(buses)
+	fmt.Println(start, buses)
+	PartA(start, buses)
 
 }
