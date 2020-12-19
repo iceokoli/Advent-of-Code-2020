@@ -6,14 +6,15 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 )
 
-func deepCopy(b [][]rune) [][]rune {
-	a := make([][]rune, len(b))
+func deepCopy(b [][]string) [][]string {
+	a := make([][]string, len(b))
 	for i := range b {
-		a[i] = make([]rune, len(b[i]))
+		a[i] = make([]string, len(b[i]))
 		copy(a[i], b[i])
 	}
 	return a
@@ -22,10 +23,10 @@ func deepCopy(b [][]rune) [][]rune {
 
 type challenge struct {
 	env   string
-	input [][]rune
+	input [][]string
 }
 
-func (c challenge) readInput() [][]rune {
+func (c challenge) readInput() [][]string {
 	// Get current directory
 	_, filename, _, _ := runtime.Caller(0)
 	dir, err := filepath.Abs(filepath.Dir(filename))
@@ -39,47 +40,125 @@ func (c challenge) readInput() [][]rune {
 		os.Exit(1)
 	}
 	// turn the file into an array
-	var result [][]rune
+	var result [][]string
 	for _, i := range strings.Split(string(raw), "\n") {
-		temp := []rune(i)
+		var temp []string
+		for _, j := range []rune(i) {
+			temp = append(temp, string(j))
+		}
 		result = append(result, temp)
 	}
 
 	return result
 }
 
-func (c challenge) makeChanges(s [][]rune) [][]rune {
-	result := deepCopy(s)
+func (c challenge) getAdjacent(data [][]string, x int, y int) []string {
 
-	for r, i := range result {
-		for c, j := range i {
+	var dxStart, dyStart, dxEnd, dyEnd int
+	if x > 0 {
+		dxStart = -1
+	} else {
+		dxStart = 0
+	}
 
-			up := s[r-1][c]
-			down := s[r+1][c]
-			d1 := s[r-1][c-1]
-			d2 := s[r-1][c+1]
-			left := s[r][c-1]
-			right := s[r][c+1]
-			
-			d3 := s[r+1][c-1]
-			d4 := s[r+1][c+1]
-			if string(j) == "L" && 
+	if y > 0 {
+		dyStart = -1
+	} else {
+		dyStart = 0
+	}
+
+	if x < len(data)-1 {
+		dxEnd = 1
+	} else {
+		dxEnd = 0
+	}
+
+	if y < len(data[0])-1 {
+		dyEnd = 1
+	} else {
+		dyEnd = 0
+	}
+
+	var result []string
+	for dx := dxStart; dx <= dxEnd; dx++ {
+		for dy := dyStart; dy <= dyEnd; dy++ {
+			if dx != 0 || dy != 0 {
+				result = append(result, data[x+dx][y+dy])
+			}
 		}
 	}
 
+	return result
+
 }
 
-func (c challenge) partA() {
+func (c challenge) partA(s [][]string) [][]string {
 
-	start := deepCopy(c.input)
-	result := c.makeChanges(start)
+	alter := deepCopy(s)
+
+	for x, i := range s {
+		for y, j := range i {
+			adj := c.getAdjacent(s, x, y)
+			isEmpty := j == "L"
+			isOccupied := j == string(rune(35))
+			allAdjFree := !stringInSlice(string(rune(35)), adj)
+			fourAdjOccupied := (numInSlice(string(rune(35)), adj) >= 4)
+
+			if isEmpty && allAdjFree {
+				alter[x][y] = string(rune(35))
+			}
+			if isOccupied && fourAdjOccupied {
+				alter[x][y] = "L"
+			}
+
+		}
+	}
+
+	if !reflect.DeepEqual(s, alter) {
+		alter = c.partA(alter)
+	}
+
+	return alter
+
+}
+func numInSlice(a string, list []string) int {
+
+	var count int
+	for _, b := range list {
+		if b == a {
+			count++
+		}
+	}
+	return count
+}
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
+func (c challenge) partB(s [][]string) [][]string {
 
 }
 
 func main() {
 
-	day10 := challenge{env: "test"}
+	day10 := challenge{env: "prod"}
 	day10.input = day10.readInput()
-	day10.partA()
+	ansA := day10.partA(deepCopy(day10.input))
+
+	var count int
+	for _, i := range ansA {
+		for _, j := range i {
+			if j == string(rune(35)) {
+				count++
+			}
+		}
+	}
+
+	fmt.Println("Answer to Part A: ", count)
 
 }
